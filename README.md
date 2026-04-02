@@ -12,16 +12,16 @@ structured notebook logging (queryable history, pattern discovery). See also
 
 ```bash
 # In your project directory:
-cp ~/codes/ralph-wiggum-sh/PROMPT.md .
-cp ~/codes/ralph-wiggum-sh/tasks.json.example tasks.json
+cp ~/codes/ralph-wiggum-lnb/PROMPT.md .
+cp ~/codes/ralph-wiggum-lnb/tasks.json.example tasks.json
 # Edit tasks.json with your stories
 
 # Initialize notebook with coding schema
-mkdir -p .lnb && cp ~/codes/ralph-wiggum-sh/coding-dev.yaml .lnb/schema.yaml
+mkdir -p .lnb && cp ~/codes/ralph-wiggum-lnb/coding-dev.yaml .lnb/schema.yaml
 lab-notebook init .lnb
 
 # Run
-~/codes/ralph-wiggum-sh/ralph.sh --max-iterations 5
+~/codes/ralph-wiggum-lnb/ralph.sh --max-iterations 5
 ```
 
 ## How It Works
