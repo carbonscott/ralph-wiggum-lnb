@@ -1,37 +1,37 @@
-# Lisa
+# Ralph Wiggum
 
 Autonomous agent loop for code development. Spawns a fresh Claude instance
 per iteration. Each iteration completes one story, logs progress to
 a [lab-notebook](https://github.com/carbonscott/lab-notebook), and moves on.
 
-Combines the best of [Ralph](https://github.com/mikeyobrien/ralph-orchestrator)
-(file-based task tracking, external bash loop) with structured notebook
-logging (queryable history, pattern discovery).
+Based on the [Ralph Wiggum technique](https://ghuntley.com/ralph/) with
+structured notebook logging (queryable history, pattern discovery). See also
+[Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
 
 ## Quick Start
 
 ```bash
 # In your project directory:
-cp ~/codes/lisa/PROMPT.md .
-cp ~/codes/lisa/tasks.json.example tasks.json
+cp ~/codes/ralph-wiggum-sh/PROMPT.md .
+cp ~/codes/ralph-wiggum-sh/tasks.json.example tasks.json
 # Edit tasks.json with your stories
 
 # Initialize notebook with coding schema
-mkdir -p .lnb && cp ~/codes/lisa/coding-dev.yaml .lnb/schema.yaml
+mkdir -p .lnb && cp ~/codes/ralph-wiggum-sh/coding-dev.yaml .lnb/schema.yaml
 lab-notebook init .lnb
 
 # Run
-~/codes/lisa/lisa.sh --max-iterations 5
+~/codes/ralph-wiggum-sh/ralph.sh --max-iterations 5
 ```
 
 ## How It Works
 
 ```
-tasks.md (what to do)  +  .lnb/ (what happened)  +  PROMPT.md (how to do it)
-         │                       │                           │
-         └───────────┬───────────┘                           │
-                     ▼                                       │
-              lisa.sh builds prompt ◄────────────────────────┘
+tasks.json (what to do)  +  .lnb/ (what happened)  +  PROMPT.md (how to do it)
+           │                       │                           │
+           └───────────┬───────────┘                           │
+                       ▼                                       │
+              ralph.sh builds prompt ◄─────────────────────────┘
                      │
               ┌──────┴──────────────────────┐
               │  for each iteration:        │
@@ -49,7 +49,7 @@ tasks.md (what to do)  +  .lnb/ (what happened)  +  PROMPT.md (how to do it)
 
 | File | Purpose |
 |------|---------|
-| `lisa.sh` | Runner script — the loop |
+| `ralph.sh` | Runner script — the loop |
 | `PROMPT.md` | Prompt template with `<!-- FILL:xxx -->` markers |
 | `tasks.json` | Your stories with `passes` flags (copy from `tasks.json.example`) |
 | `coding-dev.yaml` | Lab-notebook schema for code dev workflows |
@@ -63,7 +63,7 @@ flipping `"passes": false` to `"passes": true`.
 ```json
 {
   "project": "MyApp",
-  "branch": "lisa/feature-name",
+  "branch": "ralph/feature-name",
   "description": "Feature description",
   "stories": [
     {
@@ -120,5 +120,5 @@ LAB_NOTEBOOK_DIR=.lnb lab-notebook sql \
 
 ## Archive
 
-When the `branch` field in `tasks.json` changes between runs, Lisa archives
+When the `branch` field in `tasks.json` changes between runs, Ralph archives
 the previous task file and notebook to `archive/<date>-<branch>/`.

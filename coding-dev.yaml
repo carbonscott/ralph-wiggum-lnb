@@ -1,5 +1,5 @@
 # Code development loop — track implementation progress, test results, and patterns.
-# Use this schema with Lisa (or any coding agent loop) to record the
+# Use this schema with Ralph Wiggum (or any coding agent loop) to record the
 # development narrative: what was built, what broke, what patterns emerged.
 #
 # Core fields (id, ts, writer_id, context, type, content) are always present.

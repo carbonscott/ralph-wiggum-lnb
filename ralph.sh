@@ -15,11 +15,11 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 usage() {
     cat <<'EOF'
-Usage: lisa.sh [OPTIONS]
+Usage: ralph.sh [OPTIONS]
 
 Autonomous agent loop for code development tasks.
 Spawns a fresh Claude instance per iteration, tracking state via a task
-file (tasks.md) and a lab-notebook.
+file (tasks.json) and a lab-notebook.
 
 Options:
   --max-iterations N      Safety cap (default: 10)
@@ -38,7 +38,7 @@ The loop exits when:
 Each iteration the agent completes one story and outputs <promise>DONE</promise>.
 
 Example:
-  lisa.sh --max-iterations 5 --task-file tasks.json
+  ralph.sh --max-iterations 5 --task-file tasks.json
 EOF
     exit 0
 }
@@ -95,12 +95,12 @@ if [[ -z "$CONTEXT" ]]; then
     elif [[ -n "$PROJECT" ]]; then
         CONTEXT="$PROJECT"
     else
-        CONTEXT="lisa-dev"
+        CONTEXT="ralph-dev"
     fi
 fi
 
 # --- Archive support ---
-LAST_BRANCH_FILE=".lisa-last-branch"
+LAST_BRANCH_FILE=".ralph-last-branch"
 
 archive_previous_run() {
     if [[ -f "$TASK_FILE" && -f "$LAST_BRANCH_FILE" ]]; then
@@ -109,7 +109,7 @@ archive_previous_run() {
         if [[ -n "$BRANCH" && -n "$last_branch" && "$BRANCH" != "$last_branch" ]]; then
             local date_str folder_name archive_folder
             date_str=$(date +%Y-%m-%d)
-            folder_name=$(echo "$last_branch" | sed 's|^lisa/||; s|/|-|g')
+            folder_name=$(echo "$last_branch" | sed 's|^ralph/||; s|/|-|g')
             archive_folder="$ARCHIVE_DIR/$date_str-$folder_name"
 
             echo "Archiving previous run: $last_branch"
@@ -146,7 +146,7 @@ log_to_notebook() {
     if command -v lab-notebook &>/dev/null && [[ -d "$NOTEBOOK_DIR" ]]; then
         LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook emit \
             --context "$CONTEXT" --type "$entry_type" \
-            --branch "${BRANCH:-}" --tags "lisa-harness" \
+            --branch "${BRANCH:-}" --tags "ralph-harness" \
             "$message" 2>/dev/null || true
     fi
 }
@@ -199,10 +199,10 @@ format_stream() {
 archive_previous_run
 ensure_notebook
 
-TMPFILE=$(mktemp /tmp/lisa-output.XXXXXX)
+TMPFILE=$(mktemp /tmp/ralph-output.XXXXXX)
 trap 'rm -f "$TMPFILE"' EXIT
 
-echo "=== Lisa ==="
+echo "=== Ralph Wiggum ==="
 echo "Project:    ${PROJECT:-<none>}"
 echo "Branch:     ${BRANCH:-<none>}"
 echo "Context:    $CONTEXT"
@@ -219,7 +219,7 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
     history=$(query_recent_history)
     prompt=$(build_prompt "$history")
 
-    log_to_notebook "start" "lisa.sh: starting iteration $i/$MAX_ITERATIONS"
+    log_to_notebook "start" "ralph.sh: starting iteration $i/$MAX_ITERATIONS"
 
     # Run the agent
     exit_code=0
@@ -232,7 +232,7 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
 
     if [[ $exit_code -ne 0 ]]; then
         echo "Agent exited with code $exit_code"
-        log_to_notebook "blocker" "lisa.sh: iteration $i ended with exit code $exit_code"
+        log_to_notebook "blocker" "ralph.sh: iteration $i ended with exit code $exit_code"
         echo "Stopping due to non-zero exit."
         break
     fi
@@ -241,22 +241,22 @@ for i in $(seq 1 "$MAX_ITERATIONS"); do
     if grep -q "<promise>${ALL_DONE_PROMISE}</promise>" "$TMPFILE" 2>/dev/null; then
         echo ""
         echo "=== All stories complete! ==="
-        log_to_notebook "done" "lisa.sh: all stories complete at iteration $i"
+        log_to_notebook "done" "ralph.sh: all stories complete at iteration $i"
         break
     elif grep -q "<promise>${COMPLETION_PROMISE}</promise>" "$TMPFILE" 2>/dev/null; then
         echo ""
         echo "=== Iteration $i: story complete, continuing ==="
-        log_to_notebook "done" "lisa.sh: story completed at iteration $i, continuing"
+        log_to_notebook "done" "ralph.sh: story completed at iteration $i, continuing"
         continue
     fi
 
-    log_to_notebook "impl" "lisa.sh: iteration $i ended without promise"
+    log_to_notebook "impl" "ralph.sh: iteration $i ended without promise"
 done
 
 if [[ $i -ge $MAX_ITERATIONS ]]; then
     echo ""
     echo "=== Max iterations ($MAX_ITERATIONS) reached ==="
-    log_to_notebook "blocker" "lisa.sh: stopped after reaching max iterations ($MAX_ITERATIONS)"
+    log_to_notebook "blocker" "ralph.sh: stopped after reaching max iterations ($MAX_ITERATIONS)"
 fi
 
 echo "Done."

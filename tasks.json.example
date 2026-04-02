@@ -1,6 +1,6 @@
 {
   "project": "MyApp",
-  "branch": "lisa/task-priority",
+  "branch": "ralph/task-priority",
   "description": "Task Priority System — add priority levels to tasks",
   "stories": [
     {
