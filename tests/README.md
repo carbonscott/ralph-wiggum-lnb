@@ -61,10 +61,12 @@ Sandboxes are timestamped, so old runs are never overwritten.
 
 - Needs `jq` and `lab-notebook` on `$PATH` (same prerequisites as
   ralph itself).
-- The sandbox symlinks `PROMPT.md` from `shared/` and runs scripts
-  live from the repo by absolute path, so uncommitted changes to
-  `shared/ralph-lib.sh` / `shared/PROMPT.md` / etc. affect the test.
-  This is by design — smoke tests validate the current source tree.
+- The sandbox only contains `tasks.json`. The runners pick up
+  `shared/PROMPT.md` from the repo automatically, and all helper
+  scripts are invoked live from the repo by absolute path — so
+  uncommitted changes to `shared/PROMPT.md`, `shared/ralph-lib.sh`,
+  etc. still affect the test. This is by design: smoke tests validate
+  the current source tree.
 - The fixture's `branch: "ralph/smoke-test"` is just a label used for
   the notebook context and prompt substitution. Ralph does not run
   `git checkout`.

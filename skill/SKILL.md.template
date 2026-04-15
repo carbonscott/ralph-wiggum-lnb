@@ -2,7 +2,7 @@
 name: ralph-lnb
 description: "Run the Ralph Wiggum autonomous code loop inside a Claude Code session. Use when the user types /ralph-lnb, or says 'run ralph', 'start the ralph loop', 'keep iterating on the tasks', or asks to work through tasks.json story-by-story. Each iteration spawns a fresh subagent to complete one story and logs progress to the lab notebook."
 user-invocable: true
-argument-hint: "[max-iterations N] [task-file FILE]"
+argument-hint: "[max-iterations N] [task-file FILE] [prompt FILE]"
 ---
 
 <!-- Managed by ralph-wiggum-lnb install.sh — do not edit by hand. Re-run ./install.sh from the repo to regenerate. -->
@@ -25,25 +25,25 @@ Parse `$ARGUMENTS` as a whitespace-separated list of `key value` pairs. Supporte
 |---|---|---|
 | `max-iterations` | `10` | Safety cap on the loop |
 | `task-file` | `tasks.json` | Path to the task file (relative to cwd) |
+| `prompt` | `@@RALPH_REPO@@/shared/PROMPT.md` | Custom prompt template. Omit to use the repo's shared template. |
 
 Everything else gets ignored. Examples of valid argument strings:
 
 - *(empty)* — use all defaults
 - `max-iterations 5`
 - `max-iterations 3 task-file sprint.json`
+- `max-iterations 5 prompt ./custom-prompt.md`
 
 ## Prerequisites (verify before starting)
 
 1. The current Claude Code session must be in `acceptEdits` permission mode (or the user must approve each subagent tool call manually). Subagents inherit the parent session's permission mode. This replaces `cc-headless/ralph.sh`'s `--permission-mode acceptEdits` flag.
 2. `<task-file>` must exist in the current working directory and contain stories in the format described at `@@RALPH_REPO@@/shared/tasks.json.example`.
-3. A `PROMPT.md` must exist in the current working directory. If it doesn't, tell the user:
-
-   > No `PROMPT.md` in this directory. Copy it from the repo first:
-   > ```
-   > cp @@RALPH_REPO@@/shared/PROMPT.md .
-   > ```
-
-   Wait for them to do that (or confirm they want you to do it), then proceed.
+3. The prompt template. By default, `ralph-prep.sh` loads
+   `@@RALPH_REPO@@/shared/PROMPT.md` — the user does not need to copy
+   anything. If the user passed a `prompt FILE` argument, forward that
+   path to `ralph-prep.sh` on every iteration (see Loop step 1). Do
+   not pre-check the file — `ralph-prep.sh` validates it on iteration
+   1 and errors cleanly if missing.
 4. `jq` and `lab-notebook` must be on `$PATH`. If missing, tell the user and stop.
 
 ## Procedure
@@ -52,7 +52,7 @@ When invoked, the main session (you) must do the following. Do not deviate, do n
 
 ### Setup
 
-1. Parse `max-iterations` and `task-file` from `$ARGUMENTS`. Apply the defaults above for anything unspecified.
+1. Parse `max-iterations`, `task-file`, and `prompt` from `$ARGUMENTS`. Apply the defaults above for anything unspecified. `prompt` is optional — if the user did not supply it, leave the variable unset and omit `--prompt` from the `ralph-prep.sh` call in Loop step 1.
 2. Derive the notebook context once, so every subsequent log call uses the same value:
 
    ```
@@ -60,7 +60,7 @@ When invoked, the main session (you) must do the following. Do not deviate, do n
    ```
 
    Capture stdout into `<context>`. This mirrors how `ralph-prep.sh` derives it, so both runners agree on the context slug.
-3. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X, context=<context>"`. One line, nothing more.
+3. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X, prompt=P, context=<context>"`. One line, nothing more. Use the user-supplied prompt path for `P` if they passed one; otherwise use the literal string `shared/PROMPT.md` so readers can tell at a glance which template is in play.
 
 ### Loop
 
@@ -69,8 +69,10 @@ For `i` in `1..max-iterations`:
 1. **Build the prompt.** Call:
 
    ```
-   Bash("@@RALPH_REPO@@/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>")
+   Bash("@@RALPH_REPO@@/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
    ```
+
+   Append `--prompt <prompt>` only if the user supplied one in Setup step 1; otherwise omit the flag so `ralph-prep.sh` uses its own default (`shared/PROMPT.md`).
 
    Pass the same `N` you parsed in Setup so the start log entry records the cap alongside the iteration number (matches `cc-headless/ralph.sh`'s log format). Capture the tool result's stdout. This is the filled prompt. Do not read, quote, or summarize it — just hold it for the next step.
 

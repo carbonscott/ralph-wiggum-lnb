@@ -35,17 +35,25 @@ location with `RALPH_BIN_DIR=/usr/local/bin ./install.sh`. Undo with
 `./uninstall.sh` — if you overrode `RALPH_BIN_DIR` on install, pass
 the same value on uninstall so it can find the symlink to remove.
 
-If you prefer not to install, the absolute-path invocations in the
-Quick Start below still work.
+If you prefer not to install, you can still run the scripts by
+absolute path: `~/codes/ralph-wiggum-lnb/cc-headless/ralph.sh` for
+headless mode, or `follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md` in
+a Claude Code session.
 
 ## Quick Start
 
 ```bash
 # In your project directory:
-cp ~/codes/ralph-wiggum-lnb/shared/PROMPT.md .
 cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json
 # Edit tasks.json with your stories
 ```
+
+The runner uses `shared/PROMPT.md` from the installed repo by default.
+Copy it locally and pass `--prompt ./PROMPT.md` only if you want to
+customize the template. **Upgrading from an older checkout?** A stale
+`./PROMPT.md` in your project dir is no longer auto-picked up — delete
+it if you never customized it, or pass `--prompt ./PROMPT.md`
+explicitly if you did.
 
 The runner auto-initializes `.lnb/` with the coding schema on the first
 iteration — no manual `lab-notebook init` needed.
@@ -55,19 +63,22 @@ Then pick one runner:
 **Headless** (uses `claude -p`):
 
 ```bash
-~/codes/ralph-wiggum-lnb/cc-headless/ralph.sh --max-iterations 5
+ralph --max-iterations 5
 ```
 
 **Inside a Claude Code session** (uses the `Agent()` subagent tool — no `-p` needed):
 
 Start Claude Code in `acceptEdits` mode, then in the session:
 
-> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 5
+> /ralph-lnb max-iterations 5
 
-No extra files need to live in your project dir — `PROMPT.md` +
-`tasks.json` is the entire footprint. Helper scripts, the shared lib,
-and the notebook schema all stay in the repo and are invoked or sourced
-by absolute path.
+(Restart any running Claude Code sessions after install — skills load
+at session start.)
+
+`tasks.json` is the entire footprint in your project dir. The prompt
+template, shared lib, helper scripts, and notebook schema all stay in
+the repo and are invoked or sourced by `ralph` / `/ralph-lnb` (or by
+absolute path if you skipped install).
 
 ## How It Works
 
@@ -179,20 +190,21 @@ LAB_NOTEBOOK_DIR=.lnb lab-notebook sql \
   "SELECT content FROM entries WHERE type='pattern' ORDER BY ts"
 ```
 
-## `cc-headless/ralph.sh` options
+## Headless runner options (ralph)
 
 ```
 --max-iterations N      Safety cap (default: 10)
---prompt FILE           Prompt template (default: PROMPT.md)
+--prompt FILE           Custom prompt template (default: repo's shared/PROMPT.md)
 --task-file FILE        Task file (default: tasks.json)
 --notebook DIR          Notebook directory (default: .lnb)
 --context SLUG          Notebook context (default: from branch)
 --archive-dir DIR       Archive directory (default: archive/)
 ```
 
-For the Claude Code session runner, `max-iterations`, `task-file`, and
-related parameters are passed inline when invoking the driver doc — see
-`cc/RALPH-CC.md`.
+For the Claude Code session runner, invoke it as `/ralph-lnb
+max-iterations N` (with `task-file` and other parameters passed
+inline). See `cc/RALPH-CC.md` for the underlying driver doc and
+stop-condition semantics.
 
 ## Archive
 
