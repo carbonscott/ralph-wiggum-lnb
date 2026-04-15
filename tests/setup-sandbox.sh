@@ -6,10 +6,9 @@ SANDBOX="${TMPDIR:-/tmp}/ralph-smoke-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$SANDBOX"
 
-# The sandbox mimics a user's project dir: only PROMPT.md + tasks.json.
-# Runners are invoked by absolute path from $REPO_DIR, exercising the
-# zero-copy invocation model that cc-headless and cc modes both use.
-ln -s "$REPO_DIR/shared/PROMPT.md" "$SANDBOX/PROMPT.md"
+# The sandbox mimics a user's project dir: just tasks.json. The runners
+# resolve shared/PROMPT.md from the repo automatically, so a project
+# needs no local prompt copy unless it wants to customize the template.
 cp "$REPO_DIR/tests/tasks.json" "$SANDBOX/tasks.json"
 
 cat <<EOF

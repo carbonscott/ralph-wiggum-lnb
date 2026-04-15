@@ -3,7 +3,7 @@ set -euo pipefail
 
 # --- Defaults ---
 MAX_ITERATIONS=10
-PROMPT_FILE="PROMPT.md"
+PROMPT_FILE=""
 TASK_FILE="tasks.json"
 NOTEBOOK_DIR=".lnb"
 CONTEXT=""
@@ -32,7 +32,7 @@ file (tasks.json) and a lab-notebook.
 
 Options:
   --max-iterations N      Safety cap (default: 10)
-  --prompt FILE           Prompt template (default: PROMPT.md)
+  --prompt FILE           Custom prompt template (default: repo's shared/PROMPT.md)
   --task-file FILE        Task file with stories (default: tasks.json)
   --notebook DIR          Lab-notebook directory (default: .lnb)
   --context SLUG          Notebook context (default: derived from branch)
@@ -66,10 +66,14 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
+# Default to the repo's shared template if --prompt wasn't passed.
+if [[ -z "$PROMPT_FILE" ]]; then
+    PROMPT_FILE="$SHARED_DIR/PROMPT.md"
+fi
+
 # --- Validate ---
 if [[ ! -f "$PROMPT_FILE" ]]; then
     echo "Error: Prompt file '$PROMPT_FILE' not found." >&2
-    echo "Copy the template: cp $SHARED_DIR/PROMPT.md ." >&2
     exit 1
 fi
 
@@ -134,6 +138,7 @@ echo "Project:    ${PROJECT:-<none>}"
 echo "Branch:     ${BRANCH:-<none>}"
 echo "Context:    $CONTEXT"
 echo "Task file:  $TASK_FILE"
+echo "Prompt:     $PROMPT_FILE"
 echo "Notebook:   $NOTEBOOK_DIR"
 echo "Max iter:   $MAX_ITERATIONS"
 echo "============="

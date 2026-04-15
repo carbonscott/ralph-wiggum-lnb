@@ -5,23 +5,29 @@ designed to run entirely inside a live Claude Code chat session using
 the `Agent()` subagent tool instead of headless `claude -p`. Use this
 when `-p` mode is unavailable or restricted.
 
-Same `PROMPT.md`, same `tasks.json`, same `.lnb/` notebook, same
-`archive/` directory, same per-iteration semantics. The only thing that
-changes is who spawns the per-iteration agent.
+Same prompt template, same `tasks.json`, same `.lnb/` notebook, same
+`archive/` directory, same per-iteration semantics. The only thing
+that changes is who spawns the per-iteration agent.
 
 ## How to invoke
 
 In a Claude Code chat, type one of:
 
-> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 10
+> /ralph-lnb max-iterations 10
 
-> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 5, task-file tasks.json
+> /ralph-lnb max-iterations 5, task-file tasks.json
+
+> /ralph-lnb max-iterations 5, prompt ./custom-prompt.md
+
+If you skipped `install.sh`, the long form still works:
+
+> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 10
 
 Defaults when unspecified:
 
 - `max-iterations` = 10
 - `task-file` = `tasks.json`
-- `prompt` = `PROMPT.md`
+- `prompt` = the installed repo's `shared/PROMPT.md`
 - `notebook` = `.lnb`
 
 ## Prerequisites
@@ -30,13 +36,12 @@ Defaults when unspecified:
    (or you must approve each subagent tool call manually). Subagents
    inherit the parent session's permission mode. This replaces
    `ralph.sh`'s `--permission-mode acceptEdits` flag.
-2. `PROMPT.md` and `tasks.json` must exist in the current directory.
-   Copy them from the repo: `cp ~/codes/ralph-wiggum-lnb/shared/PROMPT.md .`
-   and `cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json`,
-   then edit `tasks.json` to describe your stories. Nothing else needs
-   to live in the project dir — `ralph-prep.sh`, `ralph-lib.sh`, and
-   `coding-dev.yaml` all stay in the repo and are invoked/sourced by
-   absolute path.
+2. `tasks.json` must exist in the current directory. Copy the starter
+   and edit it: `cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json`,
+   then describe your stories. Nothing else needs to live in the
+   project dir — the prompt template, `ralph-prep.sh`, `ralph-lib.sh`,
+   and `coding-dev.yaml` all stay in the repo and are invoked/sourced
+   by absolute path.
 3. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
 
 ## Procedure for the main Claude Code session
@@ -47,8 +52,10 @@ minimum specified.
 
 ### Setup
 
-1. Parse `max-iterations` and `task-file` from the user's message.
-   Apply defaults for anything unspecified.
+1. Parse `max-iterations`, `task-file`, and `prompt` from the user's
+   message. Apply defaults for anything unspecified. `prompt` is
+   optional — if the user did not supply it, leave it unset and omit
+   `--prompt` from the `ralph-prep.sh` call in Loop step 1.
 2. Derive the notebook context once, so every subsequent log call uses
    the same value:
 
@@ -68,8 +75,12 @@ For `i` in `1..max-iterations`:
 1. **Build the prompt.** Call:
 
    ```
-   Bash("$HOME/codes/ralph-wiggum-lnb/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>")
+   Bash("$HOME/codes/ralph-wiggum-lnb/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
    ```
+
+   Append `--prompt <prompt>` only if the user supplied one in Setup
+   step 1; otherwise omit the flag so `ralph-prep.sh` uses its own
+   default (`shared/PROMPT.md`).
 
    Pass the same `N` you parsed in Setup so the start log entry records
    the cap alongside the iteration number (matches `ralph.sh`'s log
@@ -150,7 +161,7 @@ the user doesn't need.
 
 | Aspect | `ralph.sh` | This flow |
 |---|---|---|
-| Entry | terminal: `~/codes/ralph-wiggum-lnb/cc-headless/ralph.sh --max-iterations N` | chat: "follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations N" |
+| Entry | terminal: `ralph --max-iterations N` | chat: `/ralph-lnb max-iterations N` |
 | Per-iter agent | `claude -p --permission-mode acceptEdits` | `Agent(subagent_type="general-purpose")` |
 | Permission mode | CLI flag | inherited from main session |
 | Intermediate display | stream-json via `format_stream` | native Claude Code subagent UI |
