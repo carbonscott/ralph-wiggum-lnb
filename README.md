@@ -19,8 +19,9 @@ Two install artifacts:
 
 - `~/.local/bin/ralph` → symlink to the headless runner. Put `~/.local/bin`
   on `$PATH` if it isn't already (`install.sh` warns you if not).
-- `~/.claude/skills/ralph-lnb/SKILL.md` → the `/ralph-lnb` slash command
-  for Claude Code chats.
+- `~/.claude/skills/ralph-lnb/SKILL.md` → the `ralph-lnb` skill. Claude
+  Code exposes user-invocable skills as slash commands, so it appears
+  as `/ralph-lnb` in chat.
 
 After install, the invocations become:
 
@@ -31,7 +32,8 @@ After install, the invocations become:
 `install.sh` is idempotent. Re-run it after moving or re-cloning the
 repo — it rewrites the skill with the new path. Override the bin
 location with `RALPH_BIN_DIR=/usr/local/bin ./install.sh`. Undo with
-`./uninstall.sh`.
+`./uninstall.sh` — if you overrode `RALPH_BIN_DIR` on install, pass
+the same value on uninstall so it can find the symlink to remove.
 
 If you prefer not to install, the absolute-path invocations in the
 Quick Start below still work.

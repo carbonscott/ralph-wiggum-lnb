@@ -115,8 +115,11 @@ fi
 
 if [[ $install_skill -eq 1 ]]; then
     # Render template: substitute @@RALPH_REPO@@ with the absolute repo path.
-    # Use | as sed delimiter since paths contain / — REPO shouldn't contain |.
-    sed "s|@@RALPH_REPO@@|$REPO|g" "$TEMPLATE" > "$SKILL_TARGET"
+    # Escape \, |, & in $REPO — those are the three characters sed treats
+    # specially in the replacement string. Backslash must go first so the
+    # subsequent substitutions don't double-escape.
+    REPO_ESCAPED=$(printf '%s\n' "$REPO" | sed 's/[\\|&]/\\&/g')
+    sed "s|@@RALPH_REPO@@|$REPO_ESCAPED|g" "$TEMPLATE" > "$SKILL_TARGET"
     echo "Installed: $SKILL_TARGET (rendered with $REPO)"
 fi
 
