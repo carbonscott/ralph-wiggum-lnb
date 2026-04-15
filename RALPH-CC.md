@@ -46,7 +46,16 @@ minimum specified.
 
 1. Parse `max-iterations` and `task-file` from the user's message.
    Apply defaults for anything unspecified.
-2. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X"`.
+2. Derive the notebook context once, so every subsequent log call uses
+   the same value:
+
+   ```
+   Bash("jq -r '.branch // .project // \"ralph-dev\"' <task-file>")
+   ```
+
+   Capture stdout into `<context>`. This mirrors how `ralph-prep.sh`
+   derives it, so both runners agree on the context slug.
+3. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X, context=<context>"`.
    One line, nothing more.
 
 ### Loop
@@ -56,11 +65,14 @@ For `i` in `1..max-iterations`:
 1. **Build the prompt.** Call:
 
    ```
-   Bash("./ralph-prep.sh --iteration i --task-file <task-file>")
+   Bash("./ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>")
    ```
 
-   Capture the tool result's stdout. This is the filled prompt. Do not
-   read, quote, or summarize it — just hold it for the next step.
+   Pass the same `N` you parsed in Setup so the start log entry records
+   the cap alongside the iteration number (matches `ralph.sh`'s log
+   format). Capture the tool result's stdout. This is the filled
+   prompt. Do not read, quote, or summarize it — just hold it for the
+   next step.
 
 2. **Spawn the worker.** Call:
 
@@ -76,12 +88,15 @@ For `i` in `1..max-iterations`:
    ending with either `<promise>DONE</promise>` or
    `<promise>ALL_DONE</promise>`.
 
-3. **Check the return.** Inspect the subagent's final message:
+3. **Check the return.** Inspect the subagent's final message. **Check
+   `ALL_DONE` first — `<promise>ALL_DONE</promise>` contains
+   `<promise>DONE</promise>` as a substring, so the order is
+   load-bearing.** (Same reason `ralph.sh`'s grep checks `ALL_DONE`
+   before `DONE` at ralph.sh:~159.)
 
    - Contains `<promise>ALL_DONE</promise>`:
-     - Call `Bash("LAB_NOTEBOOK_DIR=<notebook> lab-notebook emit --context <context> --type done --tags ralph-harness 'ralph-cc: all stories complete at iteration i'")`.
-       (Context comes from the task file's `branch` field; if unsure,
-       omit the emit — not critical.)
+     - Call `Bash("LAB_NOTEBOOK_DIR=<notebook> lab-notebook emit --context <context> --type done --tags ralph-harness 'ralph-cc: all stories complete at iteration i'")`
+       using the `<context>` derived in Setup step 2.
      - Break the loop. Go to "Post-loop".
    - Contains `<promise>DONE</promise>`:
      - Say exactly: `"iteration i: DONE, continuing"`. One line.
@@ -94,7 +109,7 @@ For `i` in `1..max-iterations`:
 ### Post-loop
 
 1. If the loop ended on `ALL_DONE`, optionally query the notebook for a
-   summary:
+   summary, using the `<context>` derived in Setup step 2:
 
    ```
    Bash("LAB_NOTEBOOK_DIR=<notebook> lab-notebook sql \"SELECT ts, type, issue, substr(content,1,200) FROM entries WHERE context='<context>' AND type IN ('start','done','impl','blocker') ORDER BY ts\"")

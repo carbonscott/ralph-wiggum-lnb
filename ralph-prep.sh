@@ -12,6 +12,7 @@ NOTEBOOK_DIR=".lnb"
 CONTEXT=""
 ARCHIVE_DIR="archive"
 ITERATION="1"
+MAX_ITERATIONS=""
 LAST_BRANCH_FILE=".ralph-last-branch"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -33,6 +34,10 @@ Options:
   --archive-dir DIR       Where to archive old runs (default: archive/)
   --iteration N           Iteration number, used in the start log entry
                           (default: 1)
+  --max-iterations N      Iteration cap, recorded alongside --iteration
+                          in the start log entry (optional). Does not
+                          affect the loop — the Claude Code session
+                          enforces the cap via RALPH-CC.md.
   -h, --help              Show this help
 EOF
     exit 0
@@ -47,6 +52,7 @@ while [[ $# -gt 0 ]]; do
         --context)         CONTEXT="$2"; shift 2 ;;
         --archive-dir)     ARCHIVE_DIR="$2"; shift 2 ;;
         --iteration)       ITERATION="$2"; shift 2 ;;
+        --max-iterations)  MAX_ITERATIONS="$2"; shift 2 ;;
         -h|--help)         usage ;;
         *)                 echo "Unknown option: $1" >&2; usage ;;
     esac
@@ -89,7 +95,11 @@ fi
 archive_previous_run
 ensure_notebook
 
-log_to_notebook "start" "ralph-cc: starting iteration $ITERATION"
+if [[ -n "$MAX_ITERATIONS" ]]; then
+    log_to_notebook "start" "ralph-cc: starting iteration $ITERATION/$MAX_ITERATIONS"
+else
+    log_to_notebook "start" "ralph-cc: starting iteration $ITERATION"
+fi
 
 # --- Emit filled prompt to stdout ---
 history=$(query_recent_history)

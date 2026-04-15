@@ -41,9 +41,9 @@ ensure_notebook() {
         if [[ -f "$SCRIPT_DIR/coding-dev.yaml" ]]; then
             mkdir -p "$NOTEBOOK_DIR"
             cp "$SCRIPT_DIR/coding-dev.yaml" "$NOTEBOOK_DIR/schema.yaml"
-            LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook init "$NOTEBOOK_DIR" >&2 2>/dev/null || true
+            LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook init "$NOTEBOOK_DIR" >/dev/null 2>&1 || true
         else
-            LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook init --local >&2 2>/dev/null || true
+            LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook init --local >/dev/null 2>&1 || true
         fi
         echo "Initialized notebook at $NOTEBOOK_DIR" >&2
     fi
@@ -62,8 +62,12 @@ log_to_notebook() {
 
 query_recent_history() {
     if command -v lab-notebook &>/dev/null && [[ -d "$NOTEBOOK_DIR" ]]; then
+        # Double up any single quotes in CONTEXT (SQL-standard escape)
+        # so a branch like ralph/feature's-test can't break out of the
+        # WHERE clause.
+        local escaped_context="${CONTEXT//\'/\'\'}"
         LAB_NOTEBOOK_DIR="$NOTEBOOK_DIR" lab-notebook sql \
-            "SELECT ts, type, issue, substr(content,1,200) FROM entries WHERE context='$CONTEXT' ORDER BY ts DESC LIMIT 10" \
+            "SELECT ts, type, issue, substr(content,1,200) FROM entries WHERE context='$escaped_context' ORDER BY ts DESC LIMIT 10" \
             2>/dev/null || echo "(no history yet)"
     else
         echo "(notebook not available)"
