@@ -32,8 +32,8 @@ Then pick one runner:
 **Inside a Claude Code session** (uses the `Agent()` subagent tool — no `-p` needed):
 
 ```bash
-# Copy the driver doc + helper scripts into your project
-cp ~/codes/ralph-wiggum-lnb/{RALPH-CC.md,ralph-prep.sh,ralph-lib.sh} .
+# Copy the driver doc + helper scripts + notebook schema into your project
+cp ~/codes/ralph-wiggum-lnb/{RALPH-CC.md,ralph-prep.sh,ralph-lib.sh,coding-dev.yaml} .
 chmod +x ralph-prep.sh
 ```
 

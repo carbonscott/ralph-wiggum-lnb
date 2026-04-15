@@ -30,9 +30,12 @@ Defaults when unspecified:
    (or you must approve each subagent tool call manually). Subagents
    inherit the parent session's permission mode. This replaces
    `ralph.sh`'s `--permission-mode acceptEdits` flag.
-2. `ralph-prep.sh`, `ralph-lib.sh`, and `PROMPT.md` must exist in the
-   current directory. `tasks.json` must exist and contain the stories to
-   work through.
+2. `ralph-prep.sh`, `ralph-lib.sh`, `PROMPT.md`, and `coding-dev.yaml`
+   must exist in the current directory. `tasks.json` must exist and
+   contain the stories to work through. (`coding-dev.yaml` is the
+   lab-notebook schema — without it, `ensure_notebook` falls back to
+   the default `research-notebook` schema and agents log with the
+   wrong type vocabulary.)
 3. `ralph-prep.sh` must be executable (`chmod +x ralph-prep.sh`).
 4. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
 

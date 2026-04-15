@@ -6,7 +6,7 @@ SANDBOX="${TMPDIR:-/tmp}/ralph-smoke-$(date +%Y%m%d-%H%M%S)"
 
 mkdir -p "$SANDBOX"
 
-for f in PROMPT.md ralph.sh ralph-prep.sh ralph-lib.sh RALPH-CC.md; do
+for f in PROMPT.md ralph.sh ralph-prep.sh ralph-lib.sh RALPH-CC.md coding-dev.yaml; do
     ln -s "$REPO_DIR/$f" "$SANDBOX/$f"
 done
 
