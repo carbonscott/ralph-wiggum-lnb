@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 680">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 600">
   <defs>
     <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
       <polygon points="0 0, 8 3, 0 6" fill="#8B8578"/>
@@ -12,7 +12,7 @@
   </defs>
 
   <!-- Background -->
-  <rect width="1500" height="680" fill="#F5F0EB"/>
+  <rect width="1500" height="600" fill="#F5F0EB"/>
 
   <!-- Title -->
   <text x="750" y="42" text-anchor="middle" font-family="Georgia, 'Times New Roman', serif" font-size="26" font-weight="bold" fill="#2D2A26">The Ralph-LNB Loop</text>
@@ -132,9 +132,6 @@
   <text x="1175" y="514" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="9" fill="#A09880">todo</text>
   <text x="1015" y="524" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="10" fill="#A09880">read by Build · updated by Work</text>
 
-  <!-- ===== BOTTOM SECTION ===== -->
-  <line x1="218" y1="570" x2="1283" y2="570" stroke="#D5CFC6" stroke-width="1"/>
-  <text x="218" y="595" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#A09880">stateless per iteration</text>
-  <text x="1283" y="595" text-anchor="end" font-family="system-ui, -apple-system, sans-serif" font-size="13" fill="#A09880">stateful across iterations</text>
-  <text x="750" y="640" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#8B8578">fresh context + persistent memory = reliable autonomous development</text>
+  <!-- ===== TAGLINE ===== -->
+  <text x="750" y="575" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="14" fill="#8B8578">fresh context window + on-disk memory = reliable autonomous development</text>
 </svg>
