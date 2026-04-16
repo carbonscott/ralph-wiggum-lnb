@@ -1,4 +1,6 @@
-# Ralph Wiggum
+# Ralph-Wiggum-LNB
+
+![The Ralph-LNB Loop](docs/ralph-lnb-loop.svg)
 
 Autonomous agent loop for code development. Spawns a fresh Claude instance
 per iteration. Each iteration completes one story, logs progress to
