@@ -21,7 +21,7 @@ In a Claude Code chat, type one of:
 
 If you skipped `install.sh`, the long form still works:
 
-> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 10
+> follow $RALPH_REPO/cc/RALPH-CC.md, max-iterations 10
 
 Defaults when unspecified:
 
@@ -32,17 +32,21 @@ Defaults when unspecified:
 
 ## Prerequisites
 
-1. The main Claude Code session must be in `acceptEdits` permission mode
+1. `RALPH_REPO` must be exported in the shell where Claude Code runs
+   (e.g. `export RALPH_REPO=~/codes/ralph-wiggum-lnb`). All
+   repo-relative paths below reference `$RALPH_REPO`. Verify with
+   `echo "$RALPH_REPO"`.
+2. The main Claude Code session must be in `acceptEdits` permission mode
    (or you must approve each subagent tool call manually). Subagents
    inherit the parent session's permission mode. This replaces
    `ralph.sh`'s `--permission-mode acceptEdits` flag.
-2. `tasks.json` must exist in the current directory. Copy the starter
-   and edit it: `cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json`,
+3. `tasks.json` must exist in the current directory. Copy the starter
+   and edit it: `cp "$RALPH_REPO/shared/tasks.json.example" tasks.json`,
    then describe your stories. Nothing else needs to live in the
    project dir — the prompt template, `ralph-prep.sh`, `ralph-lib.sh`,
    and `coding-dev.yaml` all stay in the repo and are invoked/sourced
    by absolute path.
-3. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
+4. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
 
 ## Procedure for the main Claude Code session
 
@@ -78,7 +82,7 @@ For `i` in `1..max-iterations`:
 1. **Build the prompt.** Call:
 
    ```
-   Bash("$HOME/codes/ralph-wiggum-lnb/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
+   Bash("$RALPH_REPO/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
    ```
 
    Append `--prompt <prompt>` only if the user supplied one in Setup
@@ -89,10 +93,9 @@ For `i` in `1..max-iterations`:
    the cap alongside the iteration number (matches `ralph.sh`'s log
    format). Capture the tool result's stdout. This is the filled
    prompt. Do not read, quote, or summarize it — just hold it for the
-   next step. Use `$HOME/...` (not `~/...`) inside `Bash()` — the tilde
-   only expands when unquoted, so `$HOME` is safer if the path later
-   gets wrapped in quotes. If the repo lives somewhere other than
-   `$HOME/codes/ralph-wiggum-lnb`, substitute your checkout path.
+   next step. `$RALPH_REPO` must be exported in the shell where the
+   `Bash()` call runs (see Prerequisites item 1); an unset variable
+   yields an empty path and the call fails with a clear error.
 
 2. **Spawn the worker.** Call:
 
