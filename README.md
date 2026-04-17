@@ -30,9 +30,17 @@ Verify with `lab-notebook --help`. Update later with
 ## Install
 
 ```bash
-git clone https://github.com/carbonscott/ralph-wiggum-lnb ~/codes/ralph-wiggum-lnb
-~/codes/ralph-wiggum-lnb/install.sh
+# Pick any path; snippets below reference $RALPH_REPO so they copy-paste verbatim.
+export RALPH_REPO=~/codes/ralph-wiggum-lnb
+
+git clone https://github.com/carbonscott/ralph-wiggum-lnb "$RALPH_REPO"
+"$RALPH_REPO/install.sh"
 ```
+
+Add the `export` line to your `~/.zshrc` or `~/.bashrc` if you want it
+to persist across new terminals. The installed `ralph` binary and
+`/ralph-lnb` skill don't need it — only snippets in this README and
+`cc/RALPH-CC.md` do.
 
 Two install artifacts:
 
@@ -55,15 +63,14 @@ location with `RALPH_BIN_DIR=/usr/local/bin ./install.sh`. Undo with
 the same value on uninstall so it can find the symlink to remove.
 
 If you prefer not to install, you can still run the scripts by
-absolute path: `~/codes/ralph-wiggum-lnb/cc-headless/ralph.sh` for
-headless mode, or `follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md` in
-a Claude Code session.
+absolute path: `$RALPH_REPO/cc-headless/ralph.sh` for headless mode,
+or `follow $RALPH_REPO/cc/RALPH-CC.md` in a Claude Code session.
 
 ## Quick Start
 
 ```bash
 # In your project directory:
-cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json
+cp "$RALPH_REPO/shared/tasks.json.example" tasks.json
 # Edit tasks.json with your stories
 ```
 

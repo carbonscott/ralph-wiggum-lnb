@@ -21,7 +21,7 @@ In a Claude Code chat, type one of:
 
 If you skipped `install.sh`, the long form still works:
 
-> follow ~/codes/ralph-wiggum-lnb/cc/RALPH-CC.md, max-iterations 10
+> follow $RALPH_REPO/cc/RALPH-CC.md, max-iterations 10
 
 Defaults when unspecified:
 
@@ -32,17 +32,21 @@ Defaults when unspecified:
 
 ## Prerequisites
 
-1. The main Claude Code session must be in `acceptEdits` permission mode
+1. `RALPH_REPO` must be exported in the shell where Claude Code runs
+   (e.g. `export RALPH_REPO=~/codes/ralph-wiggum-lnb`). All
+   repo-relative paths below reference `$RALPH_REPO`. Verify with
+   `echo "$RALPH_REPO"`.
+2. The main Claude Code session must be in `acceptEdits` permission mode
    (or you must approve each subagent tool call manually). Subagents
    inherit the parent session's permission mode. This replaces
    `ralph.sh`'s `--permission-mode acceptEdits` flag.
-2. `tasks.json` must exist in the current directory. Copy the starter
-   and edit it: `cp ~/codes/ralph-wiggum-lnb/shared/tasks.json.example tasks.json`,
+3. `tasks.json` must exist in the current directory. Copy the starter
+   and edit it: `cp "$RALPH_REPO/shared/tasks.json.example" tasks.json`,
    then describe your stories. Nothing else needs to live in the
    project dir — the prompt template, `ralph-prep.sh`, `ralph-lib.sh`,
    and `coding-dev.yaml` all stay in the repo and are invoked/sourced
    by absolute path.
-3. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
+4. `jq` and `lab-notebook` must be on `$PATH` (same as for `ralph.sh`).
 
 ## Procedure for the main Claude Code session
 
@@ -52,11 +56,18 @@ minimum specified.
 
 ### Setup
 
-1. Parse `max-iterations`, `task-file`, and `prompt` from the user's
+1. Verify `RALPH_REPO` is exported. Call:
+
+   ```
+   Bash("test -n \"$RALPH_REPO\" || { echo 'RALPH_REPO is not exported; see Prereq item 1' >&2; exit 1; }")
+   ```
+
+   If this fails, stop and report the error to the user. Do not continue.
+2. Parse `max-iterations`, `task-file`, and `prompt` from the user's
    message. Apply defaults for anything unspecified. `prompt` is
    optional — if the user did not supply it, leave it unset and omit
    `--prompt` from the `ralph-prep.sh` call in Loop step 1.
-2. Derive the notebook context once, so every subsequent log call uses
+3. Derive the notebook context once, so every subsequent log call uses
    the same value:
 
    ```
@@ -65,7 +76,7 @@ minimum specified.
 
    Capture stdout into `<context>`. This mirrors how `ralph-prep.sh`
    derives it, so both runners agree on the context slug.
-3. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X, prompt=P, context=<context>"`.
+4. Announce once: `"Starting ralph loop, max-iterations=N, task-file=X, prompt=P, context=<context>"`.
    One line, nothing more. Use the user-supplied prompt path for `P`
    if they passed one; otherwise use the literal string
    `shared/PROMPT.md` so readers can tell at a glance which template
@@ -78,21 +89,20 @@ For `i` in `1..max-iterations`:
 1. **Build the prompt.** Call:
 
    ```
-   Bash("$HOME/codes/ralph-wiggum-lnb/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
+   Bash("$RALPH_REPO/cc/ralph-prep.sh --iteration i --max-iterations N --task-file <task-file>[ --prompt <prompt>]")
    ```
 
    Append `--prompt <prompt>` only if the user supplied one in Setup
-   step 1; otherwise omit the flag so `ralph-prep.sh` uses its own
+   step 2; otherwise omit the flag so `ralph-prep.sh` uses its own
    default (`shared/PROMPT.md`).
 
    Pass the same `N` you parsed in Setup so the start log entry records
    the cap alongside the iteration number (matches `ralph.sh`'s log
    format). Capture the tool result's stdout. This is the filled
    prompt. Do not read, quote, or summarize it — just hold it for the
-   next step. Use `$HOME/...` (not `~/...`) inside `Bash()` — the tilde
-   only expands when unquoted, so `$HOME` is safer if the path later
-   gets wrapped in quotes. If the repo lives somewhere other than
-   `$HOME/codes/ralph-wiggum-lnb`, substitute your checkout path.
+   next step. `$RALPH_REPO` must be exported in the shell where the
+   `Bash()` call runs (see Prerequisites item 1); an unset variable
+   yields an empty path and the call fails with a clear error.
 
 2. **Spawn the worker.** Call:
 
@@ -116,7 +126,7 @@ For `i` in `1..max-iterations`:
 
    - Contains `<promise>ALL_DONE</promise>`:
      - Call `Bash("LAB_NOTEBOOK_DIR=<notebook> lab-notebook emit --context <context> --type done --tags ralph-harness 'ralph-cc: all stories complete at iteration i'")`
-       using the `<context>` derived in Setup step 2.
+       using the `<context>` derived in Setup step 3.
      - Break the loop. Go to "Post-loop".
    - Contains `<promise>DONE</promise>`:
      - Say exactly: `"iteration i: DONE, continuing"`. One line.
@@ -129,7 +139,7 @@ For `i` in `1..max-iterations`:
 ### Post-loop
 
 1. If the loop ended on `ALL_DONE`, optionally query the notebook for a
-   summary, using the `<context>` derived in Setup step 2:
+   summary, using the `<context>` derived in Setup step 3:
 
    ```
    Bash("LAB_NOTEBOOK_DIR=<notebook> lab-notebook sql \"SELECT ts, type, issue, substr(content,1,200) FROM entries WHERE context='<context>' AND type IN ('start','done','impl','blocker') ORDER BY ts\"")
