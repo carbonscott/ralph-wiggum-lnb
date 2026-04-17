@@ -10,6 +10,23 @@ Based on the [Ralph Wiggum technique](https://ghuntley.com/ralph/) with
 structured notebook logging (queryable history, pattern discovery). See also
 [Effective Harnesses for Long-Running Agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents).
 
+## Prerequisites
+
+Ralph depends on the [`lab-notebook`](https://github.com/carbonscott/lab-notebook)
+CLI being on `$PATH` — it's called on every iteration (notebook init,
+emit, sql). Install it first:
+
+```bash
+# Recommended (isolated install):
+uv tool install git+https://github.com/carbonscott/lab-notebook
+
+# Or with pip:
+pip install git+https://github.com/carbonscott/lab-notebook
+```
+
+Verify with `lab-notebook --help`. Update later with
+`uv tool install --force git+https://github.com/carbonscott/lab-notebook`.
+
 ## Install
 
 ```bash
